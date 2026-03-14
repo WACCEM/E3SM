@@ -61,4 +61,6 @@ inline void register_diagnostics () {
   diag_factory.register_product("AtmBackTendDiag",&create_atmosphere_diagnostic<AtmBackTendDiag>);
 }
 
-}
+} // namespace scream
+
+#endif // SCREAM_REGISTER_DIAGNOSTICS_HPP
