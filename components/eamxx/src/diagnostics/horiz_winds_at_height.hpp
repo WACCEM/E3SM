@@ -1,34 +1,51 @@
-#pragma once
+#ifndef EAMXX_HORIZ_WINDS_AT_HEIGHT_HPP
+#define EAMXX_HORIZ_WINDS_AT_HEIGHT_HPP
 
 #include "share/atm_process/atmosphere_diagnostic.hpp"
 
-namespace scream {
+namespace scream
+{
 
-// Extracts zonal (U) or meridional (V) wind from horiz_winds
-// at a specified height above surface or sea level.
-//
-// Supported field names:
-//   U_at_<Y>m_above_surface   V_at_<Y>m_above_surface
-//   U_at_<Y>m_above_sealevel  V_at_<Y>m_above_sealevel
-//
-class HorizWindsAtHeight : public AtmosphereDiagnostic {
+/*
+ * Diagnostic that extracts a single horizontal wind component (zonal U or
+ * meridional V) from horiz_winds and interpolates it to a given height above
+ * the surface or sea level.
+ *
+ * Constructed via scorpio when the output YAML requests e.g.:
+ *   U_at_10m_above_surface   (zonal wind at 10 m above surface)
+ *   V_at_10m_above_sealevel  (meridional wind at 10 m above sea level)
+ *
+ * Parameters (set by AtmosphereOutput::create_diagnostic):
+ *   wind_component    (int)    : 0 = U (zonal), 1 = V (meridional)
+ *   surface_reference (string) : "surface" or "sealevel"
+ *   vertical_location (string) : e.g. "10m"
+ *   grid_name         (string) : name of the output grid
+ */
+class HorizWindsAtHeight : public AtmosphereDiagnostic
+{
 public:
   HorizWindsAtHeight (const ekat::Comm& comm, const ekat::ParameterList& params);
 
-  std::string name () const override { return "HorizWindsAtHeight"; }
+  // Returns e.g. "U_at_10m_above_surface" — matches the requested field name
+  std::string name () const { return m_diag_name; }
 
-  void set_grids (const std::shared_ptr<const GridsManager> grids_manager) override;
+  void set_grids (const std::shared_ptr<const GridsManager> grids_manager);
 
 protected:
-  void initialize_impl (const RunType run_type) override;
-  void run_impl        (const double dt) override;
-  void finalize_impl   () override {};
+#ifdef KOKKOS_ENABLE_CUDA
+public:
+#endif
+  void compute_diagnostic_impl ();
+protected:
+  void initialize_impl (const RunType /*run_type*/);
 
-  Real        m_height;    // target height [m]
-  std::string m_surf;      // "surface" or "sealevel"
-  int         m_comp_idx;  // 0 = U (zonal), 1 = V (meridional)
-  int         m_num_cols;
-  int         m_num_levs;
+  std::string  m_diag_name;   // e.g. "U_at_10m_above_surface"
+  std::string  m_z_name;      // "z" (sealevel) or "height" (surface)
+  std::string  m_z_suffix;    // "_mid" or "_int" (set in initialize_impl)
+  int          m_comp_idx;    // 0 = U (horiz_winds[:,0,:]), 1 = V ([:,1,:])
+  Real         m_z;           // target height in metres
 };
 
-} // namespace scream
+} //namespace scream
+
+#endif // EAMXX_HORIZ_WINDS_AT_HEIGHT_HPP

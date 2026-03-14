@@ -17,6 +17,7 @@ set(DIAGNOSTIC_SRCS
   virtual_temperature.cpp
   water_path.cpp
   wind_speed.cpp
+  horiz_winds_at_height.cpp
   aodvis.cpp
   number_path.cpp
   aerocom_cld.cpp

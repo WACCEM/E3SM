@@ -1363,9 +1363,16 @@ AtmosphereOutput::create_diagnostic (const std::string& diag_field_name) {
         }
       }
       if (units=="m") {
-        diag_name = "FieldAtHeight";
         EKAT_REQUIRE_MSG(params.isParameter("surface_reference"),"Error! Output field request for " + diag_field_name + " is missing a surface reference."
             "  Please add either '_above_sealevel' or '_above_surface' to the field name");
+        // U_at_Ym_above_Z and V_at_Ym_above_Z need a component-aware diagnostic
+        // because horiz_winds (CMP,LEV) has no standalone U or V scalar field.
+        if (fname=="U" || fname=="V") {
+          diag_name = "HorizWindsAtHeight";
+          params.set<int>("wind_component", fname=="U" ? 0 : 1);
+        } else {
+          diag_name = "FieldAtHeight";
+        }
       } else if (units=="mb" or units=="Pa" or units=="hPa") {
         diag_name = "FieldAtPressureLevel";
         diag_avg_cnt_name = "_" + tokens[1]; // Set avg_cnt tracking for this specific slice

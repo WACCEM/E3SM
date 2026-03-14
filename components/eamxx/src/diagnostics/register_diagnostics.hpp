@@ -54,29 +54,11 @@ inline void register_diagnostics () {
   diag_factory.register_product("precip_surf_mass_flux",&create_atmosphere_diagnostic<PrecipSurfMassFlux>);
   diag_factory.register_product("surface_upward_latent_heat_flux",&create_atmosphere_diagnostic<SurfaceUpwardLatentHeatFlux>);
   diag_factory.register_product("wind_speed",&create_atmosphere_diagnostic<WindSpeed>);
+  diag_factory.register_product("HorizWindsAtHeight",&create_atmosphere_diagnostic<HorizWindsAtHeight>);
   diag_factory.register_product("AerosolOpticalDepth550nm",&create_atmosphere_diagnostic<AODVis>);
   diag_factory.register_product("NumberPath",&create_atmosphere_diagnostic<NumberPathDiagnostic>);
   diag_factory.register_product("AeroComCld",&create_atmosphere_diagnostic<AeroComCld>);
   diag_factory.register_product("AtmBackTendDiag",&create_atmosphere_diagnostic<AtmBackTendDiag>);
 }
-
-  dm.register_group("HorizWindsAtHeight",
-    [](const ekat::Comm& c, const ekat::ParameterList& p) -> std::shared_ptr<AtmosphereDiagnostic> {
-      return std::make_shared<HorizWindsAtHeight>(c,p);
-    },
-    [](const std::string& name) -> bool {
-      if (name.size() < 2) return false;
-      if (name[0]!='U' && name[0]!='V') return false;
-      if (name[1]!='_') return false;
-      auto pos = name.rfind("_at_");
-      if (pos==std::string::npos) return false;
-      auto suffix = name.substr(pos+4);
-      auto pos2 = suffix.find("m_above_");
-      if (pos2==std::string::npos) return false;
-      try { std::stof(suffix.substr(0,pos2)); } catch(...) { return false; }
-      auto surf = suffix.substr(pos2+8);
-      return surf=="surface" or surf=="sealevel";
-    }
-  );
 
 }
