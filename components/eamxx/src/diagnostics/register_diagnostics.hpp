@@ -20,6 +20,7 @@
 #include "diagnostics/precip_surf_mass_flux.hpp"
 #include "diagnostics/surf_upward_latent_heat_flux.hpp"
 #include "diagnostics/wind_speed.hpp"
+#include "diagnostics/horiz_winds_at_height.hpp"
 #include "diagnostics/aodvis.hpp"
 #include "diagnostics/number_path.hpp"
 #include "diagnostics/aerocom_cld.hpp"
@@ -59,5 +60,23 @@ inline void register_diagnostics () {
   diag_factory.register_product("AtmBackTendDiag",&create_atmosphere_diagnostic<AtmBackTendDiag>);
 }
 
-} // namespace scream
-#endif // SCREAM_REGISTER_DIAGNOSTICS_HPP
+  dm.register_group("HorizWindsAtHeight",
+    [](const ekat::Comm& c, const ekat::ParameterList& p) -> std::shared_ptr<AtmosphereDiagnostic> {
+      return std::make_shared<HorizWindsAtHeight>(c,p);
+    },
+    [](const std::string& name) -> bool {
+      if (name.size() < 2) return false;
+      if (name[0]!='U' && name[0]!='V') return false;
+      if (name[1]!='_') return false;
+      auto pos = name.rfind("_at_");
+      if (pos==std::string::npos) return false;
+      auto suffix = name.substr(pos+4);
+      auto pos2 = suffix.find("m_above_");
+      if (pos2==std::string::npos) return false;
+      try { std::stof(suffix.substr(0,pos2)); } catch(...) { return false; }
+      auto surf = suffix.substr(pos2+8);
+      return surf=="surface" or surf=="sealevel";
+    }
+  );
+
+}
