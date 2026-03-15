@@ -18,6 +18,7 @@ set(DIAGNOSTIC_SRCS
   water_path.cpp
   wind_speed.cpp
   horiz_winds_at_height.cpp
+  field_horiz_avg.cpp
   aodvis.cpp
   number_path.cpp
   aerocom_cld.cpp

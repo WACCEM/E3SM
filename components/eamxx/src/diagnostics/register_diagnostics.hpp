@@ -21,6 +21,7 @@
 #include "diagnostics/surf_upward_latent_heat_flux.hpp"
 #include "diagnostics/wind_speed.hpp"
 #include "diagnostics/horiz_winds_at_height.hpp"
+#include "diagnostics/field_horiz_avg.hpp"
 #include "diagnostics/aodvis.hpp"
 #include "diagnostics/number_path.hpp"
 #include "diagnostics/aerocom_cld.hpp"
@@ -55,6 +56,7 @@ inline void register_diagnostics () {
   diag_factory.register_product("surface_upward_latent_heat_flux",&create_atmosphere_diagnostic<SurfaceUpwardLatentHeatFlux>);
   diag_factory.register_product("wind_speed",&create_atmosphere_diagnostic<WindSpeed>);
   diag_factory.register_product("HorizWindsAtHeight",&create_atmosphere_diagnostic<HorizWindsAtHeight>);
+  diag_factory.register_product("FieldHorizAvg",&create_atmosphere_diagnostic<FieldHorizAvgDiagnostic>);
   diag_factory.register_product("AerosolOpticalDepth550nm",&create_atmosphere_diagnostic<AODVis>);
   diag_factory.register_product("NumberPath",&create_atmosphere_diagnostic<NumberPathDiagnostic>);
   diag_factory.register_product("AeroComCld",&create_atmosphere_diagnostic<AeroComCld>);

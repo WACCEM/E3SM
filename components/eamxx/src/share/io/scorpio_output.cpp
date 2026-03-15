@@ -1430,6 +1430,13 @@ AtmosphereOutput::create_diagnostic (const std::string& diag_field_name) {
     } else {
       params.set<std::string>("Temperature Kind", "Tot");
     }
+  } else if (diag_field_name.size() > 10 &&
+             diag_field_name.substr(diag_field_name.size()-10) == "_horiz_avg") {
+    // Strip the "_horiz_avg" suffix (10 chars) to get the base field/diagnostic name
+    const auto base_name = diag_field_name.substr(0, diag_field_name.size()-10);
+    params.set<std::string>("field_name", base_name);
+    params.set<std::string>("grid_name", get_field_manager("sim")->get_grid()->name());
+    diag_name = "FieldHorizAvg";
   } else {
     diag_name = diag_field_name;
   }
