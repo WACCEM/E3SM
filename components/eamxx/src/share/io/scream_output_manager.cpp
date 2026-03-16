@@ -233,14 +233,20 @@ setup (const ekat::Comm& io_comm, const ekat::ParameterList& params,
         int num_snaps = scorpio::get_attribute<int>(rhist_file,"GLOBAL","last_output_file_num_snaps");
 
         m_output_file_specs.filename = last_output_filename;
-        m_output_file_specs.is_open = true;
         m_output_file_specs.storage.num_snapshots_in_file = num_snaps;
 
         if (m_output_file_specs.storage.snapshot_fits(m_output_control.next_write_ts)) {
           // The setup_file call will not register any new variable (the file is in Append mode,
           // so all dims/vars must already be in the file). However, it will register decompositions,
           // since those are a property of the run, not of the file.
+          // Note: setup_file sets filespecs.is_open = true and m_resume_output_file = false.
           setup_file(m_output_file_specs,m_output_control);
+        } else {
+          // The previous output file is full (or the next snapshot does not fit for other reasons).
+          // Do NOT mark the file as open, since we never opened it in scorpio this run.
+          // Reset m_resume_output_file so that setup_file opens a fresh file (with geo data)
+          // at the first output step.
+          m_resume_output_file = false;
         }
       }
       scorpio::release_file(rhist_file);
