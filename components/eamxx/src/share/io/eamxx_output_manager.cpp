@@ -280,10 +280,14 @@ setup (const std::shared_ptr<fm_type>& field_mgr,
           // so all dims/vars must already be in the file). However, it will register decompositions,
           // since those are a property of the run, not of the file.
           m_output_file_specs.filename = last_output_filename;
-          m_output_file_specs.is_open = true;
+          // Note: setup_file sets filespecs.is_open = true and m_resume_output_file = false.
           setup_file(m_output_file_specs,m_output_control);
         } else {
-          m_output_file_specs.close();
+          // The previous output file is full (or the next snapshot does not fit for other reasons).
+          // Do NOT mark the file as open, since we never opened it in scorpio this run.
+          // Reset m_resume_output_file so that setup_file opens a fresh file (with geo data)
+          // at the first output step.
+          m_resume_output_file = false;
         }
       }
       scorpio::release_file(rhist_file);
